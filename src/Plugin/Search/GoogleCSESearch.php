@@ -109,37 +109,6 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
     $this->configuration = $configuration;
   }
 
-  public function searchFormAlter(array &$form, FormStateInterface $form_state) {
-    $defaultSeachPage = \Drupal::service('search.search_page_repository')->getDefaultSearchPage();
-    // @TODO Confirm the $defaultSearchPage value to be 'google_cse_search.
-    if ($defaultSeachPage == 'google_cse_search') {
-      $this->googlecseservices->siteSearchForm($form);
-      $form['#attributes']['class'][] = 'google-cse';
-    }
-  }
-
-  /**
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   * @return array
-   */
-  public function buildSearchUrlQuery(FormStateInterface $form_state) {
-    // Read keyword and advanced search information from the form values,
-    // and put these into the GET parameters.
-    $keys = trim($form_state->getValue('keys'));
-    if (!\Drupal::config('search.page.google_cse_search')->get('configuration')['use_adv']) {
-      return ['query' => $keys];
-    }
-    // @TODO check usage of $here and $sitesearch
-    $here = NULL;
-    $sitesearch = NULL;
-    return [
-        'query' => $keys,
-        'cx' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
-        'cof' => $here ? \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_here'] : \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_google'],
-        'sitesearch' => isset($sitesearch) ? $sitesearch : $this->googlecseservices->sitesearchDefault(),
-      ] + $this->googlecseservices->advancedSettings();
-  }
-
   /**
    * Verifies if the given parameters are valid enough to execute a search for.
    *
@@ -169,18 +138,6 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
 
       return $results;
     }
-    $results = [];
-    if (!$this->isSearchExecutable()) {
-      return $results;
-    }
-    return [
-      [
-        'link' => Url::fromRoute('<front>')->toString(),
-        'type' => 'Dummy result type',
-        'title' => 'Dummy title',
-        'snippet' => new FormattableMarkup("Dummy search snippet to display. Keywords: @keywords\n\nConditions: @search_parameters", ['@keywords' => $this->keywords, '@search_parameters' => print_r($this->searchParameters, TRUE)]),
-      ],
-    ];
   }
 
   /**
@@ -189,6 +146,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
   public function buildResults() {
     $results = $this->execute();
 
+    // @see https://www.drupal.org/node/2195739
     if (!(\Drupal::config('googlcse.settings')->get('configuration')['use_adv'])) {
       $output['#theme'] = 'google_cse_results';
 
@@ -218,7 +176,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
       $output[] = [
         '#theme' => 'search_result',
         '#result' => $entry,
-        '#module' => 'google_cse',
+        '#plugin_id' => $this->getPluginId(),
       ];
     }
 
@@ -229,6 +187,39 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
     }
 
     return $output;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Adds custom submit handler for search form.
+   */
+  public function searchFormAlter(array &$form, FormStateInterface $form_state) {
+    if ($this->pluginId == 'google_cse_search') {
+      $this->googlecseservices->siteSearchForm($form);
+      $form['#attributes']['class'][] = 'google-cse';
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildSearchUrlQuery(FormStateInterface $form_state) {
+    // Read keyword and advanced search information from the form values,
+    // and put these into the GET parameters.
+    $keys = trim($form_state->getValue('keys'));
+    if (!\Drupal::config('search.page.google_cse_search')->get('configuration')['use_adv']) {
+      return ['query' => $keys];
+    }
+    // @TODO check usage of $here and $sitesearch
+    $sitesearch = NULL;
+    $here = FALSE;
+    return [
+        'query' => $keys,
+        'cx' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
+        'cof' => $here ? \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_here'] : \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_google'],
+        'sitesearch' => isset($sitesearch) ? $sitesearch : $this->googlecseservices->sitesearchDefault(),
+      ] + $this->googlecseservices->advancedSettings();
   }
 
   /**
@@ -552,4 +543,5 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
     $this->configuration['use_adv'] = $form_state->getValue('use_adv');
 
   }
+
 }
