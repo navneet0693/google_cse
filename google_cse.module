@@ -1,0 +1,114 @@
+<?php
+
+/**
+ * @file
+ * Display a Google Custom Search Engine (CSE) on your site.
+ */
+
+/**
+ * Get the relevant language to use for the search.
+ *
+ * @return string
+ *   The language.
+ */
+function google_cse_language() {
+  $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+  $local_hl = \Drupal::config('search.page.google_cse_search')->get('configuration')['locale_hl'];
+  $hl = \Drupal::config('search.page.google_cse_search')->get('configuration')['hl'];
+  return $local_hl ? $language : $hl;
+}
+
+/**
+ * Implements hook_proxy_settings_info().
+ */
+function google_cse_proxy_settings_info() {
+  return array(
+    'google_cse_adv' => array(
+      'name' => 'Google Custom Search Engine',
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function google_cse_theme($existing, $type, $theme, $path) {
+  return array(
+    'google_cse_results' => array(
+      'variables' => array('form' => FALSE, 'path' => $path),
+      'file' => 'google_cse.theme.inc',
+      'template' => 'google_cse_results',
+    ),
+    // @TODO confirm the placement of template file.
+    'google_cse_adv_results' => array(
+      'variables' => array('form' => FALSE, 'path' => $path),
+      'file' => 'google_cse.theme.inc',
+      'template' => 'google_cse_adv/templates/google_cse_adv_results',
+    ),
+    // Shows a message when the search does not return any result.
+    'google_cse_search_noresults' => array(
+      'variables' => array(),
+    ),
+  );
+}
+
+/**
+ * Implements hook_library_info_build().
+ *
+ * @TODO Implement properly.
+ */
+function google_cse_library_info_build() {
+  $libraries = [];
+  if (Drupal::moduleHandler()->moduleExists('google_cse')) {
+    $libraries['google_cse.dynamic'] = [
+      'js' => [
+        'js/google_cse_results.js' => [],
+      ],
+      'css' => [
+        'theme' => [
+          \Drupal::config('search.page.google_cse_search')->get('configuration')['custom_css'] => [
+            'type' => 'external',
+          ]
+        ],
+      ],
+    ];
+  }
+  return $libraries;
+}
+
+/**
+ * Adds custom submit handler for search block form.
+ */
+function google_cse_form_search_block_form_alter(&$form, &$form_state, $form_id) {
+  $defaultSeachPage = \Drupal::service('search.search_page_repository')->getDefaultSearchPage();
+  if ($defaultSeachPage == 'google_cse_search') {
+    \Drupal::service('google_cse.services')->siteSearchForm($form);
+    $form['#attributes']['class'][] = 'google-cse';
+    $form['#attached']['library'] = [
+      'google_cse/googleCseWatermark',
+    ];
+    $form['#attached']['drupalSettings'] = [
+      'googleCSE' => [
+        'cx' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
+        'language' => google_cse_language(),
+        'resultsWidth' => intval(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_width']),
+        'domain' => \Drupal::config('search.page.google_cse_search')->get('configuration')['domain'],
+      ],
+    ];
+  }
+}
+
+/**
+ * Brief message to display when no results match the query.
+ *
+ * @see search_help()
+ */
+function theme_google_cse_search_noresults() {
+  return t('<h2>Sorry there were no results matching your enquiry.</h2>
+    <ul>
+    <li>Check the spelling of your keywords</li>
+    <li>Try a more specific enquiry (e.g. <em>"Penny Black"</em> instead of <em>"Stamps"</em>): "blue drop"</em></li>
+    <li>Be explicit (e.g. <em>"Second class stamp"</em> instead of <em>"Stamp"</em>)</li>
+    <li>Include spaces between keywords</li>
+    </ul>');
+}
