@@ -126,7 +126,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
     // Read keyword and advanced search information from the form values,
     // and put these into the GET parameters.
     $keys = trim($form_state->getValue('keys'));
-    if (!\Drupal::config('google_cse.settings')->get('use_adv')) {
+    if (!\Drupal::config('search.page.google_cse_search')->get('configuration')['use_adv']) {
       return ['query' => $keys];
     }
     // @TODO check usage of $here and $sitesearch
@@ -134,8 +134,8 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
     $sitesearch = NULL;
     return [
         'query' => $keys,
-        'cx' => \Drupal::config('google_cse.settings')->get('cx'),
-        'cof' => $here ? \Drupal::config('google_cse.settings')->get('cof_here') : \Drupal::config('google_cse.settings')->get('cof_google'),
+        'cx' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
+        'cof' => $here ? \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_here'] : \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_google'],
         'sitesearch' => isset($sitesearch) ? $sitesearch : $this->googlecseservices->sitesearchDefault(),
       ] + $this->googlecseservices->advancedSettings();
   }
@@ -189,7 +189,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
   public function buildResults() {
     $results = $this->execute();
 
-    if (!(\Drupal::config('googlcse.settings')->get('use_adv'))) {
+    if (!(\Drupal::config('googlcse.settings')->get('configuration')['use_adv'])) {
       $output['#theme'] = 'google_cse_results';
 
       return $output;
