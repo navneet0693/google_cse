@@ -9,8 +9,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\google_cse\GoogleCSEServices;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Core\Url;
 
 /**
  * Handles searching for node entities using the Search module index.
