@@ -41,7 +41,7 @@ class GoogleCSEServices {
     }
 
     // Number of results per page. 10 is the default for Google CSE.
-    // @TODO confirm existance
+    // @TODO Confirm input in UI
     $rows = (int) \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_results_per_page'];
 
     $query = array(
@@ -122,7 +122,6 @@ class GoogleCSEServices {
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
-    // @TODO Check port status of proxy_settings
     if (\Drupal::moduleHandler()->moduleExists('proxy_settings') && $proxy_host = proxy_settings_host('google_cse_adv')) {
 
       if ($proxy_port = proxy_settings_port('google_cse_adv')) {
@@ -176,7 +175,7 @@ class GoogleCSEServices {
    *
    * @return string
    *
-   * @todo $condition is an used variable verify and remove it.
+   * @TODO $condition is an used variable verify and remove it.
    */
   public function responseResults($response, $keys, $conditions) {
     $xml = simplexml_load_string($response);

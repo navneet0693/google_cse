@@ -122,7 +122,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
    */
   public function execute() {
     $keys = $this->getKeywords();
-    // @todo $condition is an used variable verify and remove it.
+    // @todo $condition is an unused variable verify and remove it.
     $conditions = $this->searchParameters['search_conditions'];
     if ($this->configuration['use_adv']) {
       $response = $this->googlecseservices->service($keys);
