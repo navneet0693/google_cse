@@ -48,6 +48,7 @@ function google_cse_theme($existing, $type, $theme, $path) {
     // Shows a message when the search does not return any result.
     'google_cse_search_noresults' => array(
       'variables' => array(),
+      'function' => 'theme_google_cse_search_noresults',
     ),
   );
 }
@@ -85,7 +86,7 @@ function google_cse_form_search_block_form_alter(&$form, &$form_state, $form_id)
     \Drupal::service('google_cse.services')->siteSearchForm($form);
     $form['#attributes']['class'][] = 'google-cse';
     $form['#attached']['library'] = [
-      'google_cse/googleCseWatermark',
+      'google_cse/googlecseWatermark',
     ];
     $form['#attached']['drupalSettings'] = [
       'googleCSE' => [

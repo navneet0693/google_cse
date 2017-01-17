@@ -13,3 +13,5 @@ googlecseResults:
       css/google_cse.css: {}
   js:
     js/google_cse_results.js: {}
+  dependencies:
+    - core/drupalSettings

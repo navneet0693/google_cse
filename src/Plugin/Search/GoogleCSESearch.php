@@ -146,18 +146,13 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
 
     // @see https://www.drupal.org/node/2195739
     if (!(\Drupal::config('googlcse.settings')->get('configuration')['use_adv'])) {
-      $output['#theme'] = 'google_cse_results';
-
+      $output[] = ['#theme' => 'google_cse_results'];
       return $output;
     }
 
     if (!$results) {
       // No results found.
-      $search_results = [
-        '#type' => 'google_cse_search_noresults'
-        ];
-
-      return \Drupal::service('renderer')->render($search_results);
+      $output[] = ['#theme' => 'google_cse_search_noresults'];
     }
 
     if (!empty($_GET['page'])) {

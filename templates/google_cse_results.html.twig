@@ -1,3 +1,5 @@
+{# In a Twig template we attach the library. #}
+{{ attach_library('google_cse/googlecseResults') }}
 {% if prefix %}
   <div class="google-cse-results-prefix">{{ prefix }}</div>
 {% endif %}
@@ -7,7 +9,7 @@
 {% endif %}
 
 <div id="google-cse-results">
-  {{ cse_tag }}
+  {{ cse_tag | raw }}
   <noscript>
     {{ noscript }}
   </noscript>

@@ -37,8 +37,8 @@ function google_cse_get_cse_tag() {
  * The search results page can be themed/customized.
  */
 function template_preprocess_google_cse_results(&$variables) {
-  $form_state = new \Drupal\Core\Form\FormState;
-  $variables['results_searchbox_form'] = $variables['form'] ? google_cse_results_searchbox_form($form, $form_state) : '';
+  // @TODO Implement properly as per D8.
+  // $variables['results_searchbox_form'] = $variables['form'] ? google_cse_results_searchbox_form($form, $form_state) : '';
   $variables['cse_tag'] = google_cse_get_cse_tag();
   $url = \Drupal\Core\Url::fromUri('http://' . \Drupal::config('search.page.google_cse_search')->get('configuration')['domain'] . '/cse', [
     'query' => $_GET['keys']]);
@@ -48,10 +48,10 @@ function template_preprocess_google_cse_results(&$variables) {
   );
   $variables['prefix'] = \Drupal\Component\Utility\Xss::filterAdmin(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_prefix']);
   $variables['suffix'] = \Drupal\Component\Utility\Xss::filterAdmin(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_suffix']);
-
   if (google_cse_validate_request()) {
-    // @TODO Implement properly.
-    google_cse_library_info_build();
+    $variables['#attached']['library'][] = 'google_cse/googlecseResults';
+    // {{ attach_library('google_cse/googlecseResults') }}
+    // @TODO dynamically add custom css.
   }
 }
 
@@ -104,5 +104,5 @@ function google_cse_results_searchbox_form($form = array(), &$form_state) {
   $form['query']['#title'] = t('Enter your keywords');
 
   \Drupal::service('google_cse.services')->siteSearchForm($form);
-  return \Drupal::formBuilder()->buildForm($form, $form_state);
+  return $form;
 }
