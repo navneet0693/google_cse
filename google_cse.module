@@ -48,23 +48,19 @@ function google_cse_theme($existing, $type, $theme, $path) {
     // Shows a message when the search does not return any result.
     'google_cse_search_noresults' => array(
       'variables' => array(),
-      'function' => 'theme_google_cse_search_noresults',
+      'function' => 'theme_google_cse_search_noresults'
     ),
   );
 }
 
 /**
  * Implements hook_library_info_build().
- *
- * @TODO Implement properly.
  */
 function google_cse_library_info_build() {
   $libraries = [];
+  // Add the custom css.
   if (Drupal::moduleHandler()->moduleExists('google_cse')) {
-    $libraries['google_cse.dynamic'] = [
-      'js' => [
-        'js/google_cse_results.js' => [],
-      ],
+    $libraries['google_cse/googlecseCustomcss'] = [
       'css' => [
         'theme' => [
           \Drupal::config('search.page.google_cse_search')->get('configuration')['custom_css'] => [
@@ -74,6 +70,7 @@ function google_cse_library_info_build() {
       ],
     ];
   }
+
   return $libraries;
 }
 

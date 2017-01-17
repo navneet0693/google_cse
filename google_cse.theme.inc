@@ -49,8 +49,8 @@ function template_preprocess_google_cse_results(&$variables) {
   $variables['suffix'] = \Drupal\Component\Utility\Xss::filterAdmin(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_suffix']);
   if (google_cse_validate_request()) {
     $variables['#attached']['library'][] = 'google_cse/googlecseResults';
-    // {{ attach_library('google_cse/googlecseResults') }}
-    // @TODO dynamically add custom css.
+    // Adds a custom library by google_cse_library_info_build()
+    $variables['#attached']['library'][] = 'google_cse/googlecseCustomcss';
   }
 }
 
