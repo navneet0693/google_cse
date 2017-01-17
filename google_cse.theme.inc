@@ -37,8 +37,7 @@ function google_cse_get_cse_tag() {
  * The search results page can be themed/customized.
  */
 function template_preprocess_google_cse_results(&$variables) {
-  // @TODO Implement properly as per D8.
-  // $variables['results_searchbox_form'] = $variables['form'] ? google_cse_results_searchbox_form($form, $form_state) : '';
+  $variables['results_searchbox_form'] = $variables['form'] ? \Drupal::formBuilder()->getForm('Drupal\google_cse\Form\GoogleCSESearchBoxForm') : '';
   $variables['cse_tag'] = google_cse_get_cse_tag();
   $url = \Drupal\Core\Url::fromUri('http://' . \Drupal::config('search.page.google_cse_search')->get('configuration')['domain'] . '/cse', [
     'query' => $_GET['keys']]);
@@ -64,45 +63,4 @@ function google_cse_validate_request() {
     (empty($_GET['safe']) || $_GET['safe'] == \Drupal::config('search.page.google_cse_search')->get('configuration')['safe']) &&
     (empty($_GET['sitesearch']) || (($options = \Drupal::service('google_cse.services')->sitesearchOptions()) && isset($options[$_GET['sitesearch']])))
   );
-}
-
-/**
- * Form builder for the searchbox forms.
- */
-function google_cse_results_searchbox_form($form = array(), &$form_state) {
-  if (\Drupal::config('search.page.google_cse_search')->get('configuration')['results_display'] == 'here') {
-    $cof = \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_here'];
-  }
-  else {
-    $form['#action'] = 'http://' . \Drupal::config('search.page.google_cse_search')->get('configuration')['domain'] . '/cse';
-    $cof = \Drupal::config('search.page.google_cse_search')->get('configuration')['cof_google'];
-  }
-  $form['#method'] = 'get';
-  $form['cx'] = array(
-    '#type' => 'hidden',
-    '#value' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
-  );
-  $form['cof'] = array(
-    '#type' => 'hidden',
-    '#value' => $cof,
-  );
-  $form['query'] = array(
-    '#type' => 'textfield',
-    '#default_value' => isset($_GET['query']) ? $_GET['query'] : '',
-  );
-  $form['sa'] = array(
-    '#type' => 'submit',
-    '#value' => t('Search'),
-  );
-  foreach (\Drupal::service('google_cse.services')->advancedSettings() as $parameter => $setting) {
-    $form[$parameter] = array(
-      '#type' => 'hidden',
-      '#value' => $setting,
-    );
-  }
-  $form['query']['#size'] = intval(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_searchbox_width']);
-  $form['query']['#title'] = t('Enter your keywords');
-
-  \Drupal::service('google_cse.services')->siteSearchForm($form);
-  return $form;
 }
