@@ -37,30 +37,36 @@ function google_cse_get_cse_tag() {
  * The search results page can be themed/customized.
  */
 function template_preprocess_google_cse_results(&$variables) {
+  $config = \Drupal::config('search.page.google_cse_search');
   $variables['results_searchbox_form'] = $variables['form'] ? \Drupal::formBuilder()->getForm('Drupal\google_cse\Form\GoogleCSESearchBoxForm') : '';
   $variables['cse_tag'] = google_cse_get_cse_tag();
-  $url = \Drupal\Core\Url::fromUri('http://' . \Drupal::config('search.page.google_cse_search')->get('configuration')['domain'] . '/cse', [
-    'query' => $_GET['keys']]);
+  $url = \Drupal\Core\Url::fromUri('http://' . $config->get('configuration')['domain'] . '/cse', [
+    'query' => \Drupal::request()->query->get('keys')]);
   $variables['noscript'] = t('!google, or enable JavaScript to view them here.', [
     '!google' => \Drupal\Core\Link::fromTextAndUrl('View the results at Google', $url)
     ]
   );
-  $variables['prefix'] = \Drupal\Component\Utility\Xss::filterAdmin(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_prefix']);
-  $variables['suffix'] = \Drupal\Component\Utility\Xss::filterAdmin(\Drupal::config('search.page.google_cse_search')->get('configuration')['results_suffix']);
+  $variables['prefix'] = \Drupal\Component\Utility\Xss::filterAdmin($config->get('configuration')['results_prefix']);
+  $variables['suffix'] = \Drupal\Component\Utility\Xss::filterAdmin($config->get('configuration')['results_suffix']);
   if (google_cse_validate_request()) {
     $variables['#attached']['library'][] = 'google_cse/googlecseResults';
     // Adds a custom library by google_cse_library_info_build()
-    $variables['#attached']['library'][] = 'google_cse/googlecseCustomcss';
+    if (!empty($config->get('configuration')['custom_css'])) {
+      $variables['#attached']['library'][] = 'google_cse/googlecseCustomcss';
+    }
   }
+
 }
 
 /**
  * Validate GET parameters to avoid displaying inappropriate search results.
  */
 function google_cse_validate_request() {
+  $request = \Drupal::request();
+  $config = \Drupal::config('search.page.google_cse_search');
   return (
-    (empty($_GET['cx']) || $_GET['cx'] == \Drupal::config('search.page.google_cse_search')->get('configuration')['cx']) &&
-    (empty($_GET['safe']) || $_GET['safe'] == \Drupal::config('search.page.google_cse_search')->get('configuration')['safe']) &&
-    (empty($_GET['sitesearch']) || (($options = \Drupal::service('google_cse.services')->sitesearchOptions()) && isset($options[$_GET['sitesearch']])))
+    (empty($request->query->get('cx')) || $request->query->get('cx') == $config->get('configuration')['cx']) &&
+    (empty($request->query->get('safe')) || $request->query->get('safe') == $config->get('configuration')['safe']) &&
+    (empty($request->query->get('sitesearch')) || (($options = \Drupal::service('google_cse.services')->sitesearchOptions()) && $request->query->has('sitesearch')))
   );
 }
