@@ -8,6 +8,8 @@
 namespace Drupal\google_cse;
 
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Utility\Html;
 
 class GoogleCSEServices {
@@ -16,6 +18,26 @@ class GoogleCSEServices {
    * Maximum number of results from a Google search.
    */
   const GOOGLE_MAX_SEARCH_RESULTS = 1000;
+
+  /**
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  private $requestStack;
+
+  /**
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  private $config;
+
+  /**
+   * GoogleCSEServices constructor.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   */
+  public function __construct(RequestStack $requestStack, ConfigFactoryInterface $configFactory) {
+    $this->requestStack = $requestStack;
+    $this->config = $configFactory->get('search.page.google_cse_search');
+  }
 
   /**
    * Sends query to Google's Custom Search Engine and returns response.
@@ -31,10 +53,10 @@ class GoogleCSEServices {
    */
   public function service($keys, $offset = 0) {
     $page = 0;
-    $response = array();
+    $response = [];
 
-    if (isset($_GET['page'])) {
-      $page = $_GET['page'];
+    if ($this->requestStack->getCurrentRequest()->query->has('page')) {
+      $page = $this->requestStack->getCurrentRequest()->query->get('page');
     }
     if (isset($response[$keys])) {
       return $response[$keys];
@@ -42,10 +64,10 @@ class GoogleCSEServices {
 
     // Number of results per page. 10 is the default for Google CSE.
     // @TODO Confirm input in UI
-    $rows = (int) \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_results_per_page'];
+    $rows = (int) $this->config->get('configuration')['google_cse_adv_results_per_page'];
 
     $query = array(
-      'cx' => \Drupal::config('search.page.google_cse_search')->get('configuration')['cx'],
+      'cx' => $this->config->get('configuration')['cx'],
       'client' => 'google-csbe',
       'output' => 'xml_no_dtd',
       'filter' => '1',
@@ -54,11 +76,11 @@ class GoogleCSEServices {
       'q' => $keys,
       'num' => $rows,
       'start' => ($offset) ? $offset : ($page * $rows),
-      'as_sitesearch' => \Drupal::config('search.page.google_cse_search')->get('configuration')['limit_domain'],
+      'as_sitesearch' => $this->config->get('configuration')['limit_domain'],
     );
 
-    if (isset($_GET['more'])) {
-      $query['+more:'] = urlencode($_GET['more']);
+    if ($this->requestStack->getCurrentRequest()->query->has('more')) {
+      $query['+more:'] = urlencode($this->requestStack->getCurrentRequest()->query->get('more'));
     }
 
     $url = Url::fromUri('http://www.google.com/cse',['query' => $query]);
@@ -77,7 +99,7 @@ class GoogleCSEServices {
    */
   public function paramhl() {
 
-    $language = \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_language'];
+    $language = $this->config->get('configuration')['google_cse_adv_language'];
     switch ($language) {
       case 'active':
         $language = \Drupal::languageManager()->getCurrentLanguage();
@@ -94,7 +116,7 @@ class GoogleCSEServices {
    * @return string
    */
   public function paramlr() {
-    switch (\Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_language']) {
+    switch ($this->config->get('configuration')['google_cse_adv_language']) {
       case 'active':
         $language = \Drupal::languageManager()->getCurrentLanguage();
         return 'lang_' . $language->getId();
@@ -151,7 +173,7 @@ class GoogleCSEServices {
    *   The HTML for the image.
    */
   protected function thumbnail($title, $image_att) {
-    if (\Drupal::config('search.page.google_cse_search')->get('configuration')['results_display_images']) {
+    if ($this->config->get('configuration')['results_display_images']) {
       // @TODO Check the functionality
       $image = [
         'type' => 'image',
@@ -192,7 +214,7 @@ class GoogleCSEServices {
       // Also, any result beyond pages 8x and 99 tends to repeat themselves, so
       // they are not relevant. Limited then to 150 pages (1500)
       // @TODO Confirm input in UI
-      $max_results = \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_maximum_results'];
+      $max_results = $this->config->get('configuration')['google_cse_adv_maximum_results'];
 
       $total = (int) $xml->RES->M;
       $xml->RES->M_ORIGINAL = $total;
@@ -271,7 +293,7 @@ class GoogleCSEServices {
 
       // No pager query was executed - we have to set the pager manually.
       // @TODO Confirm input in UI.
-      $limit = \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_results_per_page'];
+      $limit = $this->config->get('configuration')['google_cse_adv_results_per_page'];
       pager_default_initialize($total, $limit);
 
     }
@@ -334,7 +356,7 @@ class GoogleCSEServices {
     $total_num_results = 0;
     // Allow other modules to alter the keys.
     \Drupal::moduleHandler()->alter('google_cse_searched_keys', $keys);
-    $offset = self::GOOGLE_MAX_SEARCH_RESULTS - \Drupal::config('search.page.google_cse_search')->get('configuration')['google_cse_adv_results_per_page'];
+    $offset = self::GOOGLE_MAX_SEARCH_RESULTS - $this->config->get('configuration')['google_cse_adv_results_per_page'];
     $response = $this->service($keys, $offset);
     $xml = simplexml_load_string($response[0]);
     if (isset($xml->RES)) {
@@ -380,7 +402,7 @@ class GoogleCSEServices {
   public function siteSearchForm(&$form) {
     if ($options = $this->sitesearchOptions()) {
       $form['sitesearch'] = array(
-        '#type' => \Drupal::config('search.page.google_cse_search')->get('sitesearch_form'),
+        '#type' => $this->config->get('sitesearch_form'),
         '#options' => $options,
         '#default_value' => $this->sitesearchDefault(),
       );
@@ -397,8 +419,8 @@ class GoogleCSEServices {
     static $options;
     if (!isset($options)) {
       $options = array();
-      if ($sites = preg_split('/[\n\r]+/', \Drupal::config('search.page.google_cse_search')->get('configuration')['sitesearch'], -1, PREG_SPLIT_NO_EMPTY)) {
-        $options[''] = ($var = \Drupal::config('search.page.google_cse_search')->get('configuration')['sitesearch_option']) ? $var : t('Search the web');
+      if ($sites = preg_split('/[\n\r]+/', $this->config->get('configuration')['sitesearch'], -1, PREG_SPLIT_NO_EMPTY)) {
+        $options[''] = ($var = $this->config->get('configuration')['sitesearch_option']) ? $var : t('Search the web');
         foreach ($sites as $site) {
           $site = preg_split('/[\s]+/', trim($site), 2, PREG_SPLIT_NO_EMPTY);
           // Select options will be HTML-escaped.
@@ -415,10 +437,10 @@ class GoogleCSEServices {
    */
   public function sitesearchDefault() {
     $options = $this->sitesearchOptions();
-    if (isset($_GET['sitesearch']) && isset($options[$_GET['sitesearch']])) {
-      return $_GET['sitesearch'];
+    if ($this->requestStack->getCurrentRequest()->query->has('sitesearch') && isset($options[$this->requestStack->getCurrentRequest()->query->get('sitesearch')])) {
+      return $this->requestStack->getCurrentRequest()->query->get('sitesearch');
     }
-    elseif (\Drupal::config('search.page.google_cse_search')->get('configuration')['sitesearch_default']) {
+    elseif ($this->config->get('configuration')['sitesearch_default']) {
       // Return the key of the second element in the array.
       return key(array_slice($options, 1, 1));
     }
@@ -432,14 +454,14 @@ class GoogleCSEServices {
     $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
     $settings = array();
     foreach (array('cr', 'gl', 'hl', 'ie', 'lr', 'oe', 'safe') as $parameter) {
-      if ($setting = \Drupal::config('search.page.google_cse_search')->get('configuration')[$parameter]) {
+      if ($setting = $this->config->get('configuration')[$parameter]) {
         $settings[$parameter] = $setting;
       }
     }
-    if (\Drupal::config('search.page.google_cse_search')->get('configuration')['locale_hl']) {
+    if ($this->config->get('configuration')['locale_hl']) {
       $settings['hl'] = $language;
     }
-    if (\Drupal::config('search.page.google_cse_search')->get('configuration')['locale_lr']) {
+    if ($this->config->get('configuration')['locale_lr']) {
       $settings['lr'] = 'lang_' . $language;
     }
     return $settings;
