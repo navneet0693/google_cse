@@ -68,7 +68,7 @@ class GoogleCSESearchBoxForm extends FormBase {
     ];
     $form['query'] = [
       '#type' => 'textfield',
-      '#default_value' => isset($_GET['query']) ? $_GET['query'] : '',
+      '#default_value' => \Drupal::request()->query->has('query') ? \Drupal::request()->query->get('query') : '',
     ];
     $form['sa'] = [
       '#type' => 'submit',
