@@ -60,7 +60,7 @@ INSTALLATION
 
 Place the google_cse directory in your /modules directory.
 Enable the Google CSE module at admin/modules, configure it at 
-admin/config/search/settings, and assign permissions for "search Google 
+admin/config/search/pages, and assign permissions for "search Google
 CSE" at admin/people/permissions.
 
 To configure this module, you will need your CSE's unique ID.  Go to 
@@ -70,7 +70,7 @@ will find the "Search engine unique ID" under "Basic information".
 MAINTAINERS
 -----------
 
-Authored and maintained by mfb: http://drupal.org/user/12302
+Drupal 8 version is Authored and maintained by navneet0693: http://drupal.org/u/navneet0693
 
 The current maintainer does not plan to add new features to this module, 
 such as support for multiple CSEs; however, patches providing new 
@@ -78,3 +78,11 @@ features are welcome and will be reviewed.
 
 For bugs, feature requests and support requests, please use the issue 
 queue at http://drupal.org/project/issues/google_cse
+
+This Drupal 8 version has been sponsored by:
+
+ * QED42 - https://www.drupal.org/qed42
+
+  QED42 is a web development agency focussed on helping organisations and
+  individuals reach their potential, most of our work is in the space of
+  publishing, e-commerce, social and enterprise.
