@@ -42,8 +42,8 @@ function template_preprocess_google_cse_results(&$variables) {
   $variables['cse_tag'] = google_cse_get_cse_tag();
   $url = \Drupal\Core\Url::fromUri('http://' . $config->get('configuration')['domain'] . '/cse', [
     'query' => \Drupal::request()->query->get('keys')]);
-  $variables['noscript'] = t('!google, or enable JavaScript to view them here.', [
-    '!google' => \Drupal\Core\Link::fromTextAndUrl('View the results at Google', $url)
+  $variables['noscript'] = t(':google, or enable JavaScript to view them here.', [
+    ':google' => \Drupal\Core\Link::fromTextAndUrl('View the results at Google', $url)
     ]
   );
   $variables['prefix'] = \Drupal\Component\Utility\Xss::filterAdmin($config->get('configuration')['results_prefix']);

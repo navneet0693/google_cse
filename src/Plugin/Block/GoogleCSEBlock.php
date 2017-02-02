@@ -32,7 +32,7 @@ class GoogleCSEBlock extends BlockBase implements ContainerFactoryPluginInterfac
   /**
    * The language manager.
    *
-   * @var\Drupal\Core\Language\LanguageManagerInterface
+   * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected $languageManager;
 

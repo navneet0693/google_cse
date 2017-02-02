@@ -7,12 +7,14 @@
 
 namespace Drupal\google_cse;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Utility\Html;
 
-class GoogleCSEServices {
+class GoogleCSEServices implements ContainerFactoryPluginInterface {
 
   /**
    * Maximum number of results from a Google search.
@@ -37,6 +39,19 @@ class GoogleCSEServices {
   public function __construct(RequestStack $requestStack, ConfigFactoryInterface $configFactory) {
     $this->requestStack = $requestStack;
     $this->config = $configFactory->get('search.page.google_cse_search');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('request_stack'),
+      $container->get('config.factory')
+    );
   }
 
   /**

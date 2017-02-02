@@ -71,7 +71,7 @@ class GoogleCSESearch extends ConfigurableSearchPluginBase implements Accessible
       'results_searchbox_width' => 40,
       'results_display' => 'here',
       'results_display_images' => TRUE,
-      'google_cse_sitesearch' => '',
+      'sitesearch' => '',
       'sitesearch_form' => 'radios',
       'sitesearch_option' => '',
       'sitesearch_default' => 0,
