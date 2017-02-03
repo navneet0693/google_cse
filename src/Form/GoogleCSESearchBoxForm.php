@@ -22,7 +22,6 @@ class GoogleCSESearchBoxForm extends FormBase {
 
   /**
    * GoogleCSESearchBoxForm constructor.
-   * @param \Drupal\Core\Config\ConfigFactory $configFactory
    * @param \Drupal\google_cse\GoogleCSEServices $googleCSEServices
    */
   public function __construct(GoogleCSEServices $googleCSEServices) {
