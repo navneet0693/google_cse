@@ -13,25 +13,25 @@
       var onBlur = function(e) {
         $(e.target).css('background', '#ffffff' + getWatermarkBackground($(e.target).val()));
       };
-      var googleCSEWatermark = function (selector) {
-        var form = jQuery(selector);
-        var searchInputs = $('[data-drupal-selector="edit-keys"]', form);
+      var googleCSEWatermark = function (context, query) {
+        var form = jQuery(context);
+        var searchInputs = $('[data-drupal-selector="' + query + '"]', form);
         if (navigator.platform === 'Win32') {
           searchInputs.css('style', 'border: 1px solid #7e9db9; padding: 2px;');
         }
-
         searchInputs.blur(onBlur);
         searchInputs.focus(onFocus);
         searchInputs.each(function() {
-          var event = new Object();
-          event.target = this;
-          onBlur(event);
+            var event = new Object();
+            event.target = this;
+            onBlur(event);
         });
       };
 
-      googleCSEWatermark('[data-drupal-selector="search-block-form"] [data-drupal-form-fields="edit-keys--2"]');
-      googleCSEWatermark('[data-drupal-selector="search-block-form"] [data-drupal-form-fields="edit-keys"]');
-      googleCSEWatermark('[data-drupal-selector="search-form"]');
+      googleCSEWatermark('[data-drupal-selector="search-block-form"] [data-drupal-form-fields="edit-keys--2"]', 'edit-keys');
+      googleCSEWatermark('[data-drupal-selector="search-block-form"] [data-drupal-form-fields="edit-keys"]', 'edit-keys');
+      googleCSEWatermark('[data-drupal-selector="search-form"]', 'edit-keys');
+      googleCSEWatermark('[data-drupal-selector="google-cse-search-box-form"]', 'edit-query');
     }
   };
 })(jQuery, Drupal, drupalSettings);
